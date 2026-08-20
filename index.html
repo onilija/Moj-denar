@@ -1,0 +1,393 @@
+<!doctype html>
+<html lang="sl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#f5f5f7">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Moj denar">
+  <link rel="apple-touch-icon" href="icon-180.png">
+  <link rel="manifest" href="manifest.webmanifest">
+  <title>Moj denar</title>
+  <style>
+    :root{
+      --bg:#f5f5f7; --card:#fff; --text:#111114; --muted:#77777d;
+      --border:#e7e7eb; --blue:#0a84ff; --red:#ff453a; --green:#30d158;
+      --chip:#f0f0f3; --shadow:0 1px 3px rgba(0,0,0,.04);
+    }
+    *{box-sizing:border-box}
+    html,body{margin:0;background:var(--bg);color:var(--text);
+      font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",sans-serif}
+    button,input,select{font:inherit}
+    button{cursor:pointer}
+    .app{max-width:680px;margin:0 auto;padding:max(18px,env(safe-area-inset-top)) 16px calc(94px + env(safe-area-inset-bottom))}
+    .top{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin-bottom:18px}
+    .eyebrow{font-size:14px;color:var(--muted)}
+    .hero{font-size:38px;line-height:1;font-weight:750;letter-spacing:-1.4px;margin-top:6px}
+    .hero.positive{color:var(--blue)} .hero.negative{color:var(--red)}
+    .sub{font-size:14px;color:var(--muted);margin-top:7px}
+    .month-nav{display:flex;align-items:center;gap:7px}
+    .icon-btn{width:40px;height:40px;border:1px solid var(--border);border-radius:50%;background:var(--card);font-size:20px}
+    .tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;background:#e9e9ed;padding:4px;border-radius:14px;margin-bottom:15px}
+    .tab{border:0;background:transparent;border-radius:11px;padding:9px 5px;color:var(--muted);font-weight:650}
+    .tab.active{background:var(--card);color:var(--text);box-shadow:var(--shadow)}
+    .metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px}
+    .metric{background:var(--card);border:1px solid var(--border);border-radius:17px;padding:13px}
+    .metric span{display:block;color:var(--muted);font-size:12px}
+    .metric strong{display:block;margin-top:5px;font-size:17px;letter-spacing:-.3px}
+    .blue{color:var(--blue)!important}.red{color:var(--red)!important}
+    .card{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:16px;margin-bottom:12px}
+    .section-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:6px}
+    .section-head h2{font-size:17px;margin:0}
+    .section-head small{color:var(--muted)}
+    .chart-wrap{height:205px;margin-top:8px;position:relative}
+    svg{width:100%;height:100%;overflow:visible}
+    .chart-labels{display:flex;justify-content:space-between;color:var(--muted);font-size:11px;margin-top:2px}
+    .empty{color:var(--muted);font-size:14px;text-align:center;padding:28px 5px}
+    .cat-row,.tx-row,.fuel-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:13px 0;border-bottom:1px solid var(--border)}
+    .cat-row:last-child,.tx-row:last-child,.fuel-row:last-child{border-bottom:0}
+    .cat-left{display:flex;align-items:center;gap:11px;min-width:0}
+    .cat-icon{width:38px;height:38px;border-radius:12px;background:var(--chip);display:grid;place-items:center;font-size:19px;flex:0 0 auto}
+    .cat-name{font-weight:650}.meta{color:var(--muted);font-size:12px;margin-top:2px}
+    .amount{font-weight:730;white-space:nowrap}
+    .progress{height:7px;background:var(--chip);border-radius:99px;overflow:hidden;margin:8px 0 12px}
+    .progress > div{height:100%;background:var(--blue);border-radius:99px}
+    .car-hero{display:grid;grid-template-columns:1.3fr .7fr;gap:9px;margin-bottom:12px}
+    .big-stat{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:16px}
+    .big-stat .value{font-size:27px;font-weight:760;margin-top:5px}
+    .grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+    .small-stat{border:1px solid var(--border);background:var(--card);border-radius:17px;padding:13px}
+    .small-stat .value{font-size:19px;font-weight:730;margin-top:4px}
+    .primary{border:0;background:var(--blue);color:white;font-weight:720;border-radius:15px;padding:13px 16px}
+    .secondary{border:1px solid var(--border);background:var(--card);color:var(--text);font-weight:650;border-radius:15px;padding:12px 14px}
+    .full{width:100%}
+    .fab{position:fixed;right:max(20px,calc((100vw - 680px)/2 + 20px));bottom:calc(21px + env(safe-area-inset-bottom));
+      width:58px;height:58px;border-radius:50%;border:0;background:var(--blue);color:#fff;font-size:32px;line-height:1;box-shadow:0 8px 24px rgba(10,132,255,.28)}
+    .modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.26);display:none;align-items:flex-end;justify-content:center;padding:0}
+    .modal-bg.show{display:flex}
+    .sheet{width:100%;max-width:680px;max-height:89vh;overflow:auto;background:var(--card);border-radius:24px 24px 0 0;padding:12px 16px calc(20px + env(safe-area-inset-bottom))}
+    .grab{width:42px;height:5px;background:#d5d5da;border-radius:99px;margin:0 auto 12px}
+    .sheet-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+    .sheet-head h3{margin:0;font-size:21px}
+    .close{border:0;background:var(--chip);width:34px;height:34px;border-radius:50%;font-size:17px}
+    .seg{display:grid;grid-template-columns:1fr 1fr;gap:5px;background:var(--chip);padding:4px;border-radius:13px;margin:12px 0}
+    .seg button{border:0;background:transparent;border-radius:10px;padding:9px;font-weight:650}
+    .seg button.active{background:var(--card);box-shadow:var(--shadow)}
+    label{display:block;font-size:13px;color:var(--muted);margin:12px 0 6px}
+    input,select{width:100%;border:1px solid var(--border);border-radius:14px;background:var(--card);padding:13px;color:var(--text)}
+    .money-input{font-size:32px;font-weight:760;padding:16px}
+    .quick-cats{display:flex;gap:7px;overflow:auto;padding:3px 0 2px}
+    .quick-cats button{white-space:nowrap;border:1px solid var(--border);background:var(--card);border-radius:99px;padding:9px 12px}
+    .quick-cats button.selected{border-color:var(--blue);color:var(--blue);background:#eef6ff}
+    .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+    .hint{font-size:12px;color:var(--muted);margin-top:7px}
+    .settings-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+    .hidden{display:none!important}
+    .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(90px + env(safe-area-inset-bottom));
+      background:#111;color:white;border-radius:99px;padding:10px 14px;font-size:13px;display:none;z-index:20}
+    .toast.show{display:block}
+    @media(max-width:430px){
+      .hero{font-size:34px}.metrics{gap:6px}.metric{padding:11px}.metric strong{font-size:15px}
+      .car-hero{grid-template-columns:1fr}.form-grid{grid-template-columns:1fr 1fr}
+    }
+  </style>
+</head>
+<body>
+<main class="app">
+  <div class="top">
+    <div>
+      <div class="eyebrow" id="monthLabel">Avgust 2026</div>
+      <div id="balanceHero" class="hero positive">0,00 €</div>
+      <div class="sub">ostane ta mesec</div>
+    </div>
+    <div class="month-nav">
+      <button class="icon-btn" id="prevMonth" aria-label="Prejšnji mesec">‹</button>
+      <button class="icon-btn" id="nextMonth" aria-label="Naslednji mesec">›</button>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" data-view="home">Pregled</button>
+    <button class="tab" data-view="categories">Kategorije</button>
+    <button class="tab" data-view="car">Avto</button>
+  </div>
+
+  <section id="homeView">
+    <div class="metrics">
+      <div class="metric"><span>Prihodki</span><strong id="incomeMetric" class="blue">0 €</strong></div>
+      <div class="metric"><span>Poraba</span><strong id="expenseMetric" class="red">0 €</strong></div>
+      <div class="metric"><span>Razlika</span><strong id="diffMetric">0 €</strong></div>
+    </div>
+
+    <div class="card">
+      <div class="section-head"><h2>Stanje skozi mesec</h2><small id="chartEnd">0 €</small></div>
+      <div class="chart-wrap"><svg id="balanceChart" viewBox="0 0 620 190" role="img" aria-label="Graf finančnega stanja skozi mesec"></svg></div>
+      <div class="chart-labels"><span>1.</span><span>15.</span><span>konec meseca</span></div>
+    </div>
+
+    <div class="card">
+      <div class="section-head"><h2>Poraba po kategorijah</h2><small id="expenseSumSmall"></small></div>
+      <div id="topCategories"></div>
+    </div>
+
+    <div class="card">
+      <div class="section-head"><h2>Zadnji vnosi</h2><small id="txCount"></small></div>
+      <div id="recentTransactions"></div>
+    </div>
+  </section>
+
+  <section id="categoriesView" class="hidden">
+    <div class="card">
+      <div class="section-head"><h2>Kategorije</h2><small id="categoryTotal"></small></div>
+      <div id="categoryList"></div>
+    </div>
+  </section>
+
+  <section id="carView" class="hidden">
+    <div class="car-hero">
+      <div class="big-stat">
+        <div class="eyebrow">Avto · ta mesec</div>
+        <div class="value" id="carMonthTotal">0 €</div>
+        <div class="meta">vsi stroški avtomobila</div>
+      </div>
+      <div class="big-stat">
+        <div class="eyebrow">Prevoženo</div>
+        <div class="value" id="carKm">0 km</div>
+        <div class="meta">iz tankanj</div>
+      </div>
+    </div>
+
+    <div class="grid2">
+      <div class="small-stat"><div class="eyebrow">Gorivo</div><div class="value" id="fuelMonthTotal">0 €</div></div>
+      <div class="small-stat"><div class="eyebrow">Ostalo</div><div class="value" id="carOtherTotal">0 €</div></div>
+      <div class="small-stat"><div class="eyebrow">Povp. poraba</div><div class="value" id="avgConsumption">—</div><div class="meta">L / 100 km</div></div>
+      <div class="small-stat"><div class="eyebrow">Cena vožnje</div><div class="value" id="costPerKm">—</div><div class="meta">€ / km, gorivo</div></div>
+    </div>
+
+    <button class="primary full" id="newFuel" style="margin:12px 0">+ Novo tankanje</button>
+
+    <div class="card">
+      <div class="section-head"><h2>Tankanja</h2><small id="fuelCount"></small></div>
+      <div id="fuelList"></div>
+    </div>
+  </section>
+
+  <section class="card" style="margin-top:12px">
+    <div class="section-head"><h2>Backup</h2><small>iCloud Drive</small></div>
+    <div class="hint">Backup izvozi vse podatke v eno datoteko. V Safariju jo lahko shraniš v Files/iCloud Drive in jo kasneje obnoviš.</div>
+    <div class="settings-actions" style="margin-top:12px">
+      <button class="secondary" id="backupBtn">Shrani backup</button>
+      <label class="secondary" style="margin:0;text-align:center;color:var(--text)">Obnovi backup<input id="restoreInput" type="file" accept=".json,application/json" class="hidden"></label>
+    </div>
+  </section>
+</main>
+
+<button class="fab" id="fab" aria-label="Dodaj vnos">+</button>
+<div class="toast" id="toast"></div>
+
+<div class="modal-bg" id="entryModal">
+  <div class="sheet">
+    <div class="grab"></div>
+    <div class="sheet-head"><h3>Hiter vnos</h3><button class="close" id="entryClose">×</button></div>
+    <div class="seg"><button id="expenseType" class="active">Strošek</button><button id="incomeType">Prihodek</button></div>
+    <label>Znesek</label>
+    <input id="amount" class="money-input" type="number" inputmode="decimal" step="0.01" placeholder="0,00">
+    <label>Kategorija</label>
+    <div id="quickCats" class="quick-cats"></div>
+    <select id="category"></select>
+    <label>Opomba <span style="font-weight:400">(opcijsko)</span></label>
+    <input id="note" type="text" placeholder="npr. kosilo, Mercator ...">
+    <label>Datum</label>
+    <input id="date" type="date">
+    <button class="primary full" id="saveEntry" style="margin-top:14px">Shrani strošek</button>
+  </div>
+</div>
+
+<div class="modal-bg" id="fuelModal">
+  <div class="sheet">
+    <div class="grab"></div>
+    <div class="sheet-head"><h3>Novo tankanje</h3><button class="close" id="fuelClose">×</button></div>
+    <div class="form-grid">
+      <div><label>Plačano (€)</label><input id="fuelCost" type="number" inputmode="decimal" step="0.01" placeholder="66,20"></div>
+      <div><label>Litri</label><input id="fuelLiters" type="number" inputmode="decimal" step="0.01" placeholder="43,60"></div>
+    </div>
+    <label>Kilometri od prejšnjega tankanja</label>
+    <input id="fuelKm" type="number" inputmode="numeric" step="1" placeholder="npr. 712">
+    <div class="form-grid">
+      <div><label>Stanje števca <span style="font-weight:400">(opcijsko)</span></label><input id="odometer" type="number" inputmode="numeric" step="1" placeholder="215430"></div>
+      <div><label>Datum</label><input id="fuelDate" type="date"></div>
+    </div>
+    <label style="display:flex;align-items:center;gap:9px;color:var(--text);font-size:14px">
+      <input id="fullTank" type="checkbox" checked style="width:auto"> Tankano do polnega
+    </label>
+    <div class="hint">Poraba L/100 km je najbolj točna, ko vedno tankaš do polnega in vpišeš kilometre od prejšnjega polnega tanka.</div>
+    <button class="primary full" id="saveFuel" style="margin-top:14px">Shrani tankanje</button>
+  </div>
+</div>
+
+<script>
+const EXPENSE_CATS = [
+  ["Hrana","🍴"],["Avto","🚗"],["Zabava","🎉"],["Nakupi","🛍️"],
+  ["Naročnine","📱"],["Stanovanje","🏠"],["Potovanja","✈️"],["Zdravje","🩺"],["Drugo","•"]
+];
+const INCOME_CATS = [["Plača","💼"],["Študentsko delo","🎓"],["Prodaja","💸"],["Povračilo","↩️"],["Darilo","🎁"],["Drugo","+"]];
+const money = new Intl.NumberFormat("sl-SI",{style:"currency",currency:"EUR"});
+const num = new Intl.NumberFormat("sl-SI",{maximumFractionDigits:2});
+const monthNames = ["Januar","Februar","Marec","April","Maj","Junij","Julij","Avgust","September","Oktober","November","December"];
+let tx = JSON.parse(localStorage.getItem("md_tx")||"[]");
+let fuels = JSON.parse(localStorage.getItem("md_fuels")||"[]");
+let current = new Date(); current.setDate(1);
+let entryType="expense", selectedCat="Hrana";
+
+const $=id=>document.getElementById(id);
+function todayLocal(){const d=new Date();d.setMinutes(d.getMinutes()-d.getTimezoneOffset());return d.toISOString().slice(0,10)}
+function monthKey(d=current){return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}`}
+function save(){localStorage.setItem("md_tx",JSON.stringify(tx));localStorage.setItem("md_fuels",JSON.stringify(fuels))}
+function toast(s){$("toast").textContent=s;$("toast").classList.add("show");setTimeout(()=>$("toast").classList.remove("show"),1800)}
+function esc(s){return String(s||"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]))}
+function iconFor(cat){return (EXPENSE_CATS.concat(INCOME_CATS).find(x=>x[0]===cat)||["","•"])[1]}
+
+function entriesForMonth(){
+  const k=monthKey();
+  const normal=tx.filter(t=>t.date.startsWith(k));
+  const fuelAsTx=fuels.filter(f=>f.date.startsWith(k)).map(f=>({
+    id:"fuel_"+f.id,type:"expense",amount:f.cost,category:"Avto",note:"Tankanje",date:f.date,isFuel:true
+  }));
+  return [...normal,...fuelAsTx].sort((a,b)=>b.date.localeCompare(a.date));
+}
+
+function renderChart(entries){
+  const svg=$("balanceChart"); svg.innerHTML="";
+  const days=new Date(current.getFullYear(),current.getMonth()+1,0).getDate();
+  let daily=Array(days).fill(0);
+  entries.forEach(t=>{const day=parseInt(t.date.slice(8,10),10); if(day>=1&&day<=days) daily[day-1]+=(t.type==="income"?t.amount:-t.amount)});
+  let cum=[],s=0;daily.forEach(v=>{s+=v;cum.push(s)});
+  const min=Math.min(0,...cum), max=Math.max(0,...cum);
+  const pad=18,W=620,H=190, range=(max-min)||1;
+  const x=i=>pad+(i/(days-1||1))*(W-pad*2);
+  const y=v=>pad+((max-v)/range)*(H-pad*2);
+  const NS="http://www.w3.org/2000/svg";
+  const zero=document.createElementNS(NS,"line");
+  zero.setAttribute("x1",pad);zero.setAttribute("x2",W-pad);zero.setAttribute("y1",y(0));zero.setAttribute("y2",y(0));
+  zero.setAttribute("stroke","#d4d4d8");zero.setAttribute("stroke-dasharray","5 5");svg.appendChild(zero);
+  const pts=cum.map((v,i)=>`${x(i)},${y(v)}`).join(" ");
+  const line=document.createElementNS(NS,"polyline");line.setAttribute("points",pts);line.setAttribute("fill","none");
+  line.setAttribute("stroke",s>=0?"#0a84ff":"#ff453a");line.setAttribute("stroke-width","3");line.setAttribute("stroke-linecap","round");line.setAttribute("stroke-linejoin","round");svg.appendChild(line);
+  const c=document.createElementNS(NS,"circle");c.setAttribute("cx",x(days-1));c.setAttribute("cy",y(cum[days-1]||0));c.setAttribute("r","5");
+  c.setAttribute("fill",s>=0?"#0a84ff":"#ff453a");svg.appendChild(c);
+  $("chartEnd").textContent=(s>=0?"+":"")+money.format(s);
+  $("chartEnd").className=s>=0?"blue":"red";
+}
+
+function render(){
+  $("monthLabel").textContent=`${monthNames[current.getMonth()]} ${current.getFullYear()}`;
+  const entries=entriesForMonth();
+  const income=entries.filter(t=>t.type==="income").reduce((a,t)=>a+t.amount,0);
+  const expense=entries.filter(t=>t.type==="expense").reduce((a,t)=>a+t.amount,0);
+  const diff=income-expense;
+  $("balanceHero").textContent=(diff>=0?"+":"")+money.format(diff);
+  $("balanceHero").className=`hero ${diff>=0?"positive":"negative"}`;
+  $("incomeMetric").textContent=money.format(income);
+  $("expenseMetric").textContent=money.format(expense);
+  $("diffMetric").textContent=(diff>=0?"+":"")+money.format(diff);
+  $("diffMetric").className=diff>=0?"blue":"red";
+  $("expenseSumSmall").textContent=money.format(expense);
+  $("txCount").textContent=`${entries.length} vnosov`;
+  renderChart(entries);
+
+  const grouped={};
+  entries.filter(t=>t.type==="expense").forEach(t=>grouped[t.category]=(grouped[t.category]||0)+t.amount);
+  const cats=Object.entries(grouped).sort((a,b)=>b[1]-a[1]);
+  $("topCategories").innerHTML=cats.length?cats.slice(0,5).map(([c,v])=>{
+    const pct=expense?Math.round(v/expense*100):0;
+    return `<div class="cat-row"><div class="cat-left"><div class="cat-icon">${iconFor(c)}</div><div><div class="cat-name">${esc(c)}</div><div class="meta">${pct}% porabe</div></div></div><div class="amount">${money.format(v)}</div></div>`
+  }).join(""):`<div class="empty">Ko dodaš prve stroške, se tukaj pokaže razrez.</div>`;
+
+  $("recentTransactions").innerHTML=entries.length?entries.slice(0,6).map(t=>`
+    <div class="tx-row"><div class="cat-left"><div class="cat-icon">${iconFor(t.category)}</div><div><div class="cat-name">${esc(t.note||t.category)}</div><div class="meta">${esc(t.category)} · ${t.date.split("-").reverse().join(".")}</div></div></div>
+    <div class="amount ${t.type==="income"?"blue":"red"}">${t.type==="income"?"+":"−"}${money.format(t.amount)}</div></div>`).join(""):`<div class="empty">Za ta mesec še ni vnosov.</div>`;
+
+  $("categoryTotal").textContent=money.format(expense);
+  $("categoryList").innerHTML=cats.length?cats.map(([c,v])=>`
+    <div class="cat-row"><div class="cat-left"><div class="cat-icon">${iconFor(c)}</div><div><div class="cat-name">${esc(c)}</div><div class="meta">${entries.filter(t=>t.type==="expense"&&t.category===c).length} vnosov</div></div></div><div class="amount">${money.format(v)}</div></div>`).join(""):`<div class="empty">Ni podatkov.</div>`;
+
+  renderCar(entries);
+}
+
+function renderCar(entries){
+  const k=monthKey();
+  const mf=fuels.filter(f=>f.date.startsWith(k)).sort((a,b)=>b.date.localeCompare(a.date));
+  const carNormal=tx.filter(t=>t.date.startsWith(k)&&t.type==="expense"&&t.category==="Avto");
+  const fuelCost=mf.reduce((a,f)=>a+f.cost,0), other=carNormal.reduce((a,t)=>a+t.amount,0);
+  const km=mf.reduce((a,f)=>a+(f.km||0),0), liters=mf.filter(f=>f.fullTank).reduce((a,f)=>a+(f.liters||0),0);
+  const validKm=mf.filter(f=>f.fullTank).reduce((a,f)=>a+(f.km||0),0);
+  $("carMonthTotal").textContent=money.format(fuelCost+other);
+  $("carKm").textContent=`${num.format(km)} km`;
+  $("fuelMonthTotal").textContent=money.format(fuelCost); $("carOtherTotal").textContent=money.format(other);
+  $("avgConsumption").textContent=validKm>0?num.format(liters/validKm*100):"—";
+  $("costPerKm").textContent=km>0?num.format(fuelCost/km):"—";
+  $("fuelCount").textContent=`${mf.length} tankanj`;
+  $("fuelList").innerHTML=mf.length?mf.map(f=>{
+    const cons=(f.fullTank&&f.km>0)?`${num.format(f.liters/f.km*100)} L/100 km`:"poraba ni izračunana";
+    return `<div class="fuel-row"><div><div class="cat-name">${num.format(f.liters)} L · ${money.format(f.cost)}</div><div class="meta">${f.date.split("-").reverse().join(".")} · ${num.format(f.km||0)} km · ${cons}</div></div><div class="amount">${f.odometer?num.format(f.odometer)+" km":""}</div></div>`;
+  }).join(""):`<div class="empty">Dodaj prvo tankanje.</div>`;
+}
+
+function setView(v){
+  ["home","categories","car"].forEach(x=>{
+    $(x+"View").classList.toggle("hidden",x!==v);
+    document.querySelector(`[data-view="${x}"]`).classList.toggle("active",x===v);
+  });
+}
+
+function renderCats(){
+  const list=entryType==="expense"?EXPENSE_CATS:INCOME_CATS;
+  if(!list.some(x=>x[0]===selectedCat)) selectedCat=list[0][0];
+  $("category").innerHTML=list.map(([n])=>`<option ${n===selectedCat?"selected":""}>${n}</option>`).join("");
+  $("quickCats").innerHTML=list.slice(0,6).map(([n,i])=>`<button type="button" class="${n===selectedCat?"selected":""}" data-cat="${n}">${list[i][1]} ${n}</button>`).join("");
+  document.querySelectorAll("[data-cat]").forEach(b=>b.addEventListener("click",()=>{selectedCat=b.dataset.cat;$("category").value=selectedCat;renderCats()}));
+  $("saveEntry").textContent=entryType==="expense"?"Shrani strošek":"Shrani prihodek";
+}
+
+document.querySelectorAll("[data-view]").forEach(b=>b.addEventListener("click",()=>setView(b.dataset.view)));
+$("prevMonth").addEventListener("click",()=>{current.setMonth(current.getMonth()-1);render()});
+$("nextMonth").addEventListener("click",()=>{current.setMonth(current.getMonth()+1);render()});
+$("fab").addEventListener("click",()=>{$("entryModal").classList.add("show");$("amount").focus()});
+$("entryClose").addEventListener("click",()=>$("entryModal").classList.remove("show"));
+$("entryModal").addEventListener("click",e=>{if(e.target===$("entryModal"))$("entryModal").classList.remove("show")});
+$("expenseType").addEventListener("click",()=>{entryType="expense";selectedCat="Hrana";$("expenseType").classList.add("active");$("incomeType").classList.remove("active");renderCats()});
+$("incomeType").addEventListener("click",()=>{entryType="income";selectedCat="Plača";$("incomeType").classList.add("active");$("expenseType").classList.remove("active");renderCats()});
+$("category").addEventListener("change",()=>{selectedCat=$("category").value;renderCats()});
+$("saveEntry").addEventListener("click",()=>{
+  const amount=Number($("amount").value);
+  if(!(amount>0)){toast("Vpiši znesek.");return}
+  tx.push({id:crypto.randomUUID?crypto.randomUUID():String(Date.now()),type:entryType,amount,category:$("category").value,note:$("note").value.trim(),date:$("date").value||todayLocal()});
+  save();$("amount").value="";$("note").value="";$("entryModal").classList.remove("show");render();toast("Shranjeno");
+});
+$("newFuel").addEventListener("click",()=>{$("fuelModal").classList.add("show");$("fuelCost").focus()});
+$("fuelClose").addEventListener("click",()=>$("fuelModal").classList.remove("show"));
+$("fuelModal").addEventListener("click",e=>{if(e.target===$("fuelModal"))$("fuelModal").classList.remove("show")});
+$("saveFuel").addEventListener("click",()=>{
+  const cost=Number($("fuelCost").value), liters=Number($("fuelLiters").value), km=Number($("fuelKm").value||0), odometer=Number($("odometer").value||0);
+  if(!(cost>0)||!(liters>0)){toast("Vpiši plačano in litre.");return}
+  fuels.push({id:crypto.randomUUID?crypto.randomUUID():String(Date.now()),cost,liters,km,odometer,date:$("fuelDate").value||todayLocal(),fullTank:$("fullTank").checked});
+  save();["fuelCost","fuelLiters","fuelKm","odometer"].forEach(id=>$(id).value="");$("fuelModal").classList.remove("show");render();toast("Tankanje shranjeno");
+});
+$("backupBtn").addEventListener("click",()=>{
+  const data={version:2,exportedAt:new Date().toISOString(),transactions:tx,fuels};
+  const blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"});
+  const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=`moj-denar-backup-${todayLocal()}.json`;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+});
+$("restoreInput").addEventListener("change",async e=>{
+  const file=e.target.files[0];if(!file)return;
+  try{const data=JSON.parse(await file.text());tx=Array.isArray(data.transactions)?data.transactions:[];fuels=Array.isArray(data.fuels)?data.fuels:[];save();render();toast("Backup obnovljen")}
+  catch{toast("Backup datoteka ni veljavna.")}
+  e.target.value="";
+});
+
+$("date").value=todayLocal();$("fuelDate").value=todayLocal();renderCats();render();
+if("serviceWorker" in navigator) navigator.serviceWorker.register("./sw.js");
+</script>
+</body>
+</html>
